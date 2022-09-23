@@ -1,4 +1,4 @@
-# OZ-solver-py
+# OZ-solvers
 (In development)
 
 Codes in different languages for solving Ornstein-Zernike equation using the Picard iteration method
