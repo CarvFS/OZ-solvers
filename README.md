@@ -1,5 +1,6 @@
 # OZ-solver-py
-(In development) 
+(In development)
+
 Codes in different languages for solving Ornstein-Zernike equation using the Picard iteration method
 
 For more details one may check the following references in which it is given a description of how this method works:
