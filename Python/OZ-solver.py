@@ -65,8 +65,7 @@ def oz(r,q,rho,fgamma,V):
 Rmax=15.0 # maximum value for variable r
 N=800.0 # number of points to be generated
 
-# generating r and q coordinates according to:
-# Lado, F. (1971). Numerical fourier transforms in one, two, and three dimensions for liquid state calculations. Journal of Computational Physics, 8(3), 417-433.
+# generating r and q coordinates
 
 imax=N-1.0
 dr=Rmax/N
