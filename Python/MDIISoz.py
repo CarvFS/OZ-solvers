@@ -1,3 +1,7 @@
+"""
+Using MDIIS to solve OZ equation for simple fluids
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
