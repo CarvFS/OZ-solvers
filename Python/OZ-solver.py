@@ -1,5 +1,6 @@
 """
-Program which solves the Ornstein-Zernike (OZ) equation using the Picard iteration method
+Program which solves the Ornstein-Zernike (OZ) equation using the Picard iteration method 
+updated feb 07 2023
 Author: Felipe Silva Carvalho
 """
 
