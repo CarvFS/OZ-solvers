@@ -10,7 +10,7 @@ import math
 pi = math.pi
 
 def main():
-    global dr,dq
+    global dr,dq,R
 
     # loading expected result acquired using Picard iteration method
     data = pd.read_csv("hrHNC.txt")
@@ -41,80 +41,104 @@ def main():
     T = 2.0
 
     # defining initial guess for c(r)
-    c=np.array([])
-    for i in range(N-1):
-        c_ini = np.array([0.0])
-        #c_ini = np.exp(-r[i])
-        c = np.append(c,c_ini)
-
-    c=np.reshape(c,[len(c),1])
     
     V = pot(r,T)
 
     # defining parameters for MDIIS method
     m = 1
     n = 1
-    eta = 0.005
+    eta = 0.05
 
     sto_h = np.empty((len(r),1))
     sto_h2 = np.empty((len(r),1))
     R = np.empty((len(r),1))
     s = np.empty((m,m))
+    c = np.zeros((len(r),1))
+    
+    plt.plot(r,c,"-")
 
-    while n <= 1:
+    while n <= 3:
         # calculating Fourier Tranform (FT) of c(r)
-        ch = FT(r,q,c)
+        ch = FT(r,q,c[:,[m-1]])
 
         # calculating FT of h(r)
         hh = ch/(1.0 - rho*ch)
 
         # calculating first h(r)
         h = invFT(r,q,hh)
-        sto_h = np.append(sto_h,h,axis=1) ## TENTAR MODIFICAR PRA NÃO TER UMA COLUNA VAZIA... TALVEZ USAR RESIZE...
-
-        #print(sto_h[:,[m]])
+        
+        sto_h[:,[m-1]] = h
+        
+        #print(sto_h)
+        #input("press any bottom to continue")
+        
+        sto_h = np.append(sto_h,np.ones((len(r),1)),axis=1)
         
         # calcuçating second h(r) from closure relation
-        h2 = np.exp(-V + h - c) - 1.0
-        sto_h2 = np.append(sto_h2,h2,axis=1) ## TENTAR MODIFICAR PRA NÃO TER UMA COLUNA VAZIA... TALVEZ USAR RESIZE...
-
-        #print(sto_h2.shape)
+        h2 = np.exp(-V + h - c[:,[m-1]]) - 1.0
+        
+        sto_h2[:,[m-1]] = h2
+        
+        #print(sto_h2)
+        #input("press any bottom to continue")
+        
+        sto_h2 = np.append(sto_h2,np.ones((len(r),1)),axis=1)
 
         # calculating res
-        R = np.append(R,sto_h2[:,[m]] - sto_h[:,[m]],axis=1) ## TENTAR MODIFICAR PRA NÃO TER UMA COLUNA VAZIA... TALVEZ USAR RESIZE...
+        R[:,[m-1]] = h2 - h
+    
+        if np.sqrt(np.dot(R[:,m-1],R[:,m-1])) < 1e-4:
+            break
         #print(R)
+        #input("press any key")
 
         # calculating dot products
         for i in range(m):
             for j in range(m):
-                s[i][j] =   np.dot(R[:,i+1],R[:,j+1])
+                s[i][j] =   np.dot(R[:,i],R[:,j])
 
-        s = np.resize(s,(m+1,m+1))
-
-        for i in range(m):
-            s[i][m] = -1.0
-            s[m][i] = -1.0
-        
+        #s = np.resize(s,(m+1,m+1)) # won't work because of resize...
+        #print(s)
+        s = np.append(s,-np.ones((m,1)),axis=1)
+        s = np.append(s,-np.ones((1,m+1)),axis=0)
         s[m][m] = 0
-
+        
         b = np.zeros((m+1,1))
         b[m] = -1
-
         #print(s)
-        #print(b)
+        #input("press any key")
+        
 
         cs = np.linalg.solve(s, b)
 
         #print(cs[0:m])
-        #################################### CONTINUAR DAQUI!
-        r_star =np.matmul(c,cs[0:m]) + eta* 
-        new_c = np.matmul(c,cs[0:m]) + eta*
-
-        print(new_c)
-
-        n = n + 1
+        
+        print(R.shape,cs[0:m].shape)
+        #input()
+        
+        r_star = np.matmul(R,cs[0:m])
+            
+        #print(r_star.shape)
+        c = np.append(c,np.matmul(c,cs[0:m]) + eta*r_star,axis=1)
+        
+        plt.plot(r,c[:,m],"--r")
+        plt.show()
+        
         m = m + 1
-
+        
+        #################################### CONTINUAR DAQUI!
+        if m > 10:
+            m=10
+            for i in range(m):
+                c[:,i] = c[:,i+1]
+                R[:,i] = R[:,i+1]
+                
+        
+        R = np.append(R,np.ones((len(r),1)),axis=1)
+        
+        n = n + 1
+        
+        
 
 def pot(r,T):
     Ur=(4.0/T)*((1.0/r)**12 - (1.0/r)**6)
