@@ -47,17 +47,17 @@ def main():
     # defining parameters for MDIIS method
     m = 1
     n = 1
-    eta = 0.05
+    eta = 0.5
 
     sto_h = np.empty((len(r),1))
     sto_h2 = np.empty((len(r),1))
     R = np.empty((len(r),1))
     s = np.empty((m,m))
     c = np.zeros((len(r),1))
-    
-    plt.plot(r,c,"-")
 
-    while n <= 3:
+
+    check = 1
+    while n <= 200:
         # calculating Fourier Tranform (FT) of c(r)
         ch = FT(r,q,c[:,[m-1]])
 
@@ -72,7 +72,6 @@ def main():
         #print(sto_h)
         #input("press any bottom to continue")
         
-        sto_h = np.append(sto_h,np.ones((len(r),1)),axis=1)
         
         # calcuçating second h(r) from closure relation
         h2 = np.exp(-V + h - c[:,[m-1]]) - 1.0
@@ -82,14 +81,13 @@ def main():
         #print(sto_h2)
         #input("press any bottom to continue")
         
-        sto_h2 = np.append(sto_h2,np.ones((len(r),1)),axis=1)
 
         # calculating res
         R[:,[m-1]] = h2 - h
     
-        if np.sqrt(np.dot(R[:,m-1],R[:,m-1])) < 1e-4:
+        if np.sqrt(np.dot(R[:,m-1],R[:,m-1])) < 1e-5:
             break
-        #print(R)
+        print("it ", n, "error = ", np.sqrt(np.dot(R[:,m-1],R[:,m-1])))
         #input("press any key")
 
         # calculating dot products
@@ -97,12 +95,14 @@ def main():
             for j in range(m):
                 s[i][j] =   np.dot(R[:,i],R[:,j])
 
-        #s = np.resize(s,(m+1,m+1)) # won't work because of resize...
         #print(s)
-        s = np.append(s,-np.ones((m,1)),axis=1)
-        s = np.append(s,-np.ones((1,m+1)),axis=0)
-        s[m][m] = 0
+        if check < 2:
+            s = np.append(s,-np.ones((m,1)),axis=1)
+            s = np.append(s,-np.ones((1,m+1)),axis=0)
+            s[m][m] = 0
         
+        
+
         b = np.zeros((m+1,1))
         b[m] = -1
         #print(s)
@@ -111,33 +111,46 @@ def main():
 
         cs = np.linalg.solve(s, b)
 
+        #print(s.shape, R.shape, c.shape, cs[0:m].shape)
+
         #print(cs[0:m])
         
-        print(R.shape,cs[0:m].shape)
+        #print(R.shape,cs[0:m].shape)
         #input()
         
         r_star = np.matmul(R,cs[0:m])
             
         #print(r_star.shape)
-        c = np.append(c,np.matmul(c,cs[0:m]) + eta*r_star,axis=1)
+        c_new = np.matmul(c,cs[0:m]) + eta*r_star
         
-        plt.plot(r,c[:,m],"--r")
-        plt.show()
+        #plt.plot(r,h,"--r")
+        #plt.pause(.01)
         
         m = m + 1
         
         #################################### CONTINUAR DAQUI!
         if m > 10:
+            check = 2
             m=10
-            for i in range(m):
+            for i in range(m-1):
                 c[:,i] = c[:,i+1]
+            c[:,[m-1]] = c_new
+            for i in range(m-1):
                 R[:,i] = R[:,i+1]
-                
+        else:
+            R = np.append(R,np.ones((len(r),1)),axis=1)
+            c = np.append(c,c_new,axis=1)
+
         
-        R = np.append(R,np.ones((len(r),1)),axis=1)
-        
+        sto_h = np.append(sto_h,np.ones((len(r),1)),axis=1)
+        sto_h2 = np.append(sto_h2,np.ones((len(r),1)),axis=1)
+
         n = n + 1
+
         
+
+    plt.plot(data["r"],data["hr"],"-k",r,h,"--r")  
+    plt.show()  
         
 
 def pot(r,T):
