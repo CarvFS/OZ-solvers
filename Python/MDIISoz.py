@@ -1,5 +1,5 @@
 """
-Using MDIIS to solve OZ equation for simple fluids
+Using MDIIS to solve OZ equation for a simple LJ fluid
 """
 
 import numpy as np
@@ -128,7 +128,6 @@ def main():
         
         m = m + 1
         
-        #################################### CONTINUAR DAQUI!
         if m > 10:
             check = 2
             m=10
