@@ -1,5 +1,6 @@
 """
 Using MDIIS to solve OZ equation for a simple LJ fluid
+Author: Felipe Silva Carvalho
 """
 
 import numpy as np
