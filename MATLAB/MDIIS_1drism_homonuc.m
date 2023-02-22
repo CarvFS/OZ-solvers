@@ -3,8 +3,6 @@
 - Solves for diatomic molecules;
 - All examples are homonuclear, but it can be easily modified for
 heteronuclear molecules;
-- It needs to change from S matrix part, so all linear equations can be 
-stored in a single tensor;
 - It not seems to be difficult generalize it for larger molecules;
 
 By Felipe Silva Carvalho
@@ -118,7 +116,7 @@ for i=1:2
     end
 end
 
-while n <= 500
+while n <= 200
     %% getting the Fourier transform of c_{ij}(r), C(k)
     for i=1:2
         for j=1:2
@@ -172,23 +170,25 @@ while n <= 500
     end
     
     %% getting S matrix
-    for i=1:m
-        for j=1:m
-            s11(i,j) = dot(R(1,1,:,i),R(1,1,:,j),3);
-            s12(i,j) = dot(R(1,2,:,i),R(1,2,:,j),3);
-            s21(i,j) = s12(i,j);
-            s22(i,j) = dot(R(2,2,:,i),R(2,2,:,j),3);
+    for p=1:2
+        for o=1:2
+            for i=1:m
+                for j=1:m
+                    s(i,j,p,o) = dot(R(p,o,:,i),R(p,o,:,j),3);
+                end
+            end
         end
     end
-
-    for i=1:m
-        s11(i,m+1) = -1;s11(m+1,i) = -1;
-        s12(i,m+1) = -1;s12(m+1,i) = -1;
-        s21(i,m+1) = -1;s21(m+1,i) = -1;
-        s22(i,m+1) = -1;s22(m+1,i) = -1;
+    
+    for p=1:2
+        for o=1:2
+            for i=1:m+1
+                s(i,m+1,p,o) = -1; s(m+1,i,p,o) = -1;
+            end
+        end
     end
-
-    s11(m+1,m+1) = 0;s12(m+1,m+1) = 0;s21(m+1,m+1) = 0;s22(m+1,m+1) = 0;
+       
+    s(m+1,m+1,:,:) = 0;
 
     %% calculating b vector
     for i=1:m
@@ -199,37 +199,29 @@ while n <= 500
 
     %% getting coefficients
 
-
-    % solving with mldivide: https://www.mathworks.com/help/matlab/ref/mldivide.html
-    %{
-    sol = s11\b;cs11 = sol(1:m,1);
-    sol = s12\b;cs12 = sol(1:m,1);
-    sol = s22\b;cs22 = sol(1:m,1);
-    %}
-
     % solving with singular value decomposition
     
-    [U,S,V] = svd(s11);
-    sol = V*(S^-1)*U'*b;cs11 = sol(1:m,1);
-
-    [U,S,V] = svd(s12);
-    sol = V*(S^-1)*U'*b;cs12 = sol(1:m,1);
-
-    [U,S,V] = svd(s22);
-    sol = V*(S^-1)*U'*b;cs22 = sol(1:m,1);
-    %}
-
+    for p=1:2
+        for o=1:2
+            [U,S,V] = svd(s(:,:,p,o));
+            sol = V*(S^-1)*U'*b;cs(1:m,p,o) = sol(1:m,1);
+        end
+    end
+    
     %% getting new c(r)
 
-    r_star11 = squeeze(R(1,1,:,1:m))*cs11;
-    r_star12 = squeeze(R(1,2,:,1:m))*cs12;
-    r_star21 = r_star12;
-    r_star22 = squeeze(R(2,2,:,1:m))*cs22;
+    for p=1:2
+        for o=1:2
+            r_star(:,p,o) = squeeze(R(p,o,:,1:m))*squeeze(cs(:,p,o));
+        end
+    end
 
-    c(1,1,:,m+1) = squeeze(c(1,1,:,1:m))*cs11 + eta*r_star11;
-    c(1,2,:,m+1) = squeeze(c(1,2,:,1:m))*cs12 + eta*r_star12;
-    c(2,1,:,m+1) = c(1,2,:,m+1);
-    c(2,2,:,m+1) = squeeze(c(2,2,:,1:m))*cs22 + eta*r_star22;
+    for p=1:2
+        for o=1:2
+            c(p,o,:,m+1) = squeeze(c(1,1,:,1:m))*squeeze(cs(:,p,o)) +...
+                eta*squeeze(r_star(:,p,o));
+        end
+    end
 
     m=m+1;
 
