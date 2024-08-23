@@ -59,6 +59,14 @@ def oz(r,q,rho,fgamma,V):
     alfa=1.0
     g_novo = alfa*g_novo + (1-alfa)*fgamma
     return g_novo
+
+def excess_chemical_potential(r, g, C, rho, T):
+    int_kernel = (0.5*(g-1)*(g-1) - C - 0.5*(g-1)*C) * r*r
+    int = np.trapz(int_kernel, r, axis = 0)
+    print(int)
+    mu = T * rho * 4 * pi * int
+    return mu
+
 ########################## All functions defined ##########################
 
 
@@ -84,7 +92,7 @@ for i in range(int(imax)):
 q=np.reshape(q, (len(q),1))
 
 rho=0.9 # define liquid density
-T=2.0 # define temperature
+T=1.5 # define temperature
 
 # calculating potential
 V=pot(r,T)
@@ -129,7 +137,8 @@ plt.xlabel('r/$\sigma$',fontsize=16)
 plt.ylabel('C(r)',fontsize=16)
 plt.tick_params(labelsize=16)
 plt.tight_layout()
-#plt.savefig('Cr.eps', format='eps', dpi=600)
+plt.savefig('Cr.png')
+plt.show()
 
 plot3=plt.figure(3)
 plt.plot(r,gr,'-k')
@@ -139,5 +148,8 @@ plt.xlabel('r/$\sigma$',fontsize=16)
 plt.ylabel('g(r)',fontsize=16)
 plt.tick_params(labelsize=16)
 plt.tight_layout()
-#plt.savefig('gr.eps', format='eps', dpi=600)
+plt.savefig('gr.png')
 plt.show()
+
+## calculate excess chemical potential
+print(f'mu/epsilon = {excess_chemical_potential(r,gr,Cr,rho,T)}')
