@@ -62,10 +62,27 @@ def oz(r,q,rho,fgamma,V):
 
 def excess_chemical_potential(r, g, C, rho, T):
     int_kernel = (0.5*(g-1)*(g-1) - C - 0.5*(g-1)*C) * r*r
-    int = np.trapz(int_kernel, r, axis = 0)
-    print(int)
-    mu = T * rho * 4 * pi * int
+    I = np.trapz(int_kernel, r, axis = 0)
+    print(r.shape, g.shape, C.shape)
+    # mu = T * rho * 4 * pi * I # This gives mu/epsilon
+    mu = rho * 4 * pi * I # This gives beta * mu
     return mu
+
+def d_pot(r,T):
+    dUdr=(4.0/T)*(-12.0*(1.0/r)**13 + 6.0*(1.0/r)**7)
+    return dUdr
+
+def pressure_v(r, rho, T, g):
+    int_kernel = r*r*r*g*d_pot(r,T)
+    I = np.trapz(int_kernel, r, axis = 0)
+    p_v = 1 - (rho/6) * 4 * pi * I # This gives beta*p_v/rho
+    return p_v
+
+def isotherm_comp(r, rho, g):
+    int_kernel = r*r * (g - 1)
+    I = np.trapz(int_kernel, r, axis = 0)
+    chi_T = 1 + rho * 4 * pi * I # This gives rho*chi_T/beta
+    return chi_T
 
 ########################## All functions defined ##########################
 
@@ -138,18 +155,22 @@ plt.ylabel('C(r)',fontsize=16)
 plt.tick_params(labelsize=16)
 plt.tight_layout()
 plt.savefig('Cr.png')
+plt.savefig('Cr.pdf')
 plt.show()
 
 plot3=plt.figure(3)
-plt.plot(r,gr,'-k')
+plt.plot(r,gr-1,'-k')
 plt.xlim([0, 5])
 plt.ylim([-0.5, 3])
 plt.xlabel('r/$\sigma$',fontsize=16)
-plt.ylabel('g(r)',fontsize=16)
+plt.ylabel('h(r)',fontsize=16)
 plt.tick_params(labelsize=16)
 plt.tight_layout()
-plt.savefig('gr.png')
+plt.savefig('hr.png')
+plt.savefig('hr.pdf')
 plt.show()
 
 ## calculate excess chemical potential
-print(f'mu/epsilon = {excess_chemical_potential(r,gr,Cr,rho,T)}')
+print(f'beta * mu = {excess_chemical_potential(r,gr,Cr,rho,T)}')
+print(f'beta * p_v / rho = {pressure_v(r, rho, T, gr)}')
+print(f'rho * chi_T / beta = {isotherm_comp(r, rho, gr)}')
