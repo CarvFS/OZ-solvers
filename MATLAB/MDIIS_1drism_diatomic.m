@@ -111,7 +111,40 @@ title3='Cl-Cl';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %}
 
+%%%%%%%%%%%%%%%% CH3CH3 %%%%%%%%%%%%%%%%%%
+%  J. Chem. Phys. 102, 2092 (1995)
+rho = 0.00752; % 1/Angs^3
+T= 320;
 
+L=1.54;
+
+% 1 = CH3, 2 = CH3
+sigma(1,1) = 3.75;
+sigma(2,2) = 3.75;
+sigma(1,2) = 3.75;
+sigma(2,1) = 3.75;
+
+eps_kb(1,1) = 98;
+eps_kb(2,2) = 98;
+eps_kb(1,2) = 98;
+eps_kb(2,1) = 98;
+
+eta=0.5; 
+maxdim=5;
+fat=0;
+
+% reading data to compare final results
+data11=dlmread("dataCH3CH3.txt");
+data12=dlmread("dataCH3CH3.txt");
+data22=dlmread("dataCH3CH3.txt");
+
+title1='CH3-CH3';
+title2='CH3-CH3';
+title3='CH3-CH3';
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%}
+
+%{
 %%%%%%%%%%%%%%%% HCl model 2 %%%%%%%%%%%%%%%%%%
 %  J. Chem. Phys. 77, 509 (1982)
 rho = 0.018;
@@ -312,21 +345,21 @@ while n <= 1000
     t = tiledlayout(2,9);
 
     nexttile([2 3])
-    plot(r,h11+1,'k-',data11(:,1),data11(:,2),'.k','MarkerSize',10)
+    plot(r,h11+1,'k-',data11(:,1),data11(:,2),'--r','MarkerSize',10)
     title(title1)
-    xlim([0 10])
+    xlim([0 15])
 
     nexttile([2 3])
-    plot(r,h12+1,'k-',data12(:,1),data12(:,2),'.k','MarkerSize',10)
+    plot(r,h12+1,'k-',data12(:,1),data12(:,2),'--r','MarkerSize',10)
     title(title2)
-    xlim([0 10])
+    xlim([0 15])
 
     nexttile([2 3])
-    plot(r,h22+1,'k-',data22(:,1),data22(:,2),'.k','MarkerSize',10)
+    plot(r,h22+1,'k-',data22(:,1),data22(:,2),'--r','MarkerSize',10)
     title(title3)
-    xlim([0 10])
+    xlim([0 15])
     
-    lgd = legend('1D-RISM','Monte Carlo');
+    lgd = legend('1D-RISM','Reference');
     lgd.Layout.Tile = 'east';
 
     pause(0.001)
