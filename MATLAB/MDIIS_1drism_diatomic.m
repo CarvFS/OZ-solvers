@@ -134,6 +134,7 @@ maxdim=5;
 fat=0;
 
 % reading data to compare final results
+% acquired from 1D-RISM on Amber using PSE2 closure
 data11=dlmread("dataCH3CH3.txt");
 data12=dlmread("dataCH3CH3.txt");
 data22=dlmread("dataCH3CH3.txt");
